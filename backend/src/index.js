@@ -8,7 +8,21 @@ import { startLiveStream } from './services/liveTelematicsService.js';
 const app = express();
 
 app.use(cors({
-  origin: config.frontendUrl,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or health monitors)
+    if (!origin) return callback(null, true);
+    if (
+      !config.frontendUrl ||
+      config.frontendUrl === '*' ||
+      origin === config.frontendUrl ||
+      origin.includes('localhost') ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com')
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
